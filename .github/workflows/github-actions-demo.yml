@@ -1,0 +1,79 @@
+name: GitHub Actions Demo
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  Explore-GitHub-Actions:
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        
+    runs-on: ubuntu-latest
+    
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+      
+      - uses: actions/checkout@v2
+      
+      - name: Build rust
+        run: cargo build --verbose
+      
+      - name: Run tests
+        run: cargo test --verbose
+      
+#     - name: Build Docker
+ #      run:
+  #       docker build -t your/image-to-test .
+        
+#  need to push docker si scan ok
+      - name: Push docker
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          username: ${{ secrets.DOCKER_USERNAME }} # mettre dans settings + secrets meme chose que docker-hub-repo 
+          password: ${{ secrets.DOCKER_PASSWORD }} # idem le password de docker
+      
+      - name: Build the site in the jekyll/builder container #html
+        run: |
+          docker run \
+          -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+          jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+
+      - name: Use Node.js ${{ matrix.node-version }} #JS
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+      
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
