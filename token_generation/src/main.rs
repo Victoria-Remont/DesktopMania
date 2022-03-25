@@ -23,7 +23,7 @@ mod auth;
 
 
 
-
+//TODO : Comment useful parts for an upcoming modif
 pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
