@@ -40,18 +40,6 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
       
-#     - name: Build Docker
- #      run:
-  #       docker build -t your/image-to-test .
-        
-#  need to push docker si scan ok
-      - name: Push docker
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          username: ${{ secrets.DOCKER_USERNAME }} # mettre dans settings + secrets meme chose que docker-hub-repo 
-          password: ${{ secrets.DOCKER_PASSWORD }} # idem le password de docker
-      
       - name: Build the site in the jekyll/builder container #html
         run: |
           docker run \
